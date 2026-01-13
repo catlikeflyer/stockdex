@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gray-900 text-white font-sans;
+  background: radial-gradient(circle at 50% 50%, #1a1a2e, #000000);
+  min-height: 100vh;
+}
+
+.glass-panel {
+  @apply bg-fin-card backdrop-blur-md border border-fin-border rounded-xl shadow-xl;
+}
+
+.neon-text {
+  text-shadow: 0 0 5px currentColor;
+}
