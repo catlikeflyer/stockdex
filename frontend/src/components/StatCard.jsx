@@ -25,11 +25,14 @@ const CustomTick = ({ payload, x, y, cx, cy, setTooltip, ...rest }) => {
         fontSize={10}
         fontWeight={600}
         style={{ cursor: 'help' }}
-        onMouseEnter={(e) => setTooltip({ 
-            text: statDefinitions[payload.value], 
-            x: e.clientX, 
-            y: e.clientY 
-        })}
+        onMouseEnter={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            setTooltip({ 
+                text: statDefinitions[payload.value], 
+                x: rect.left + rect.width / 2, 
+                y: rect.top
+            });
+        }}
         onMouseLeave={() => setTooltip(null)}
       >
         {payload.value}
@@ -68,10 +71,12 @@ const StatCard = ({ data, compareData, accentColor = '#38bdf8', compareColor = '
       {/* Tooltip Portal */}
       {tooltip && (
         <div 
-            className="fixed z-50 bg-slate-900/90 text-slate-200 text-xs p-2 rounded border border-slate-700 shadow-xl pointer-events-none backdrop-blur-sm max-w-[200px]"
-            style={{ top: tooltip.y + 10, left: tooltip.x + 10 }}
+            className="fixed z-50 bg-slate-900/90 text-slate-200 text-xs p-2 rounded border border-slate-700 shadow-xl pointer-events-none backdrop-blur-sm max-w-[200px] -translate-x-1/2 -translate-y-full"
+            style={{ top: tooltip.y - 8, left: tooltip.x }}
         >
             {tooltip.text}
+            {/* Arrow */}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-slate-700"></div>
         </div>
       )}
 
