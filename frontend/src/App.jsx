@@ -7,21 +7,38 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 function App() {
   const [data, setData] = useState(null);
+  const [compareData, setCompareData] = useState(null);
+  const [mode, setMode] = useState('single'); // 'single' | 'compare'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const handleSearch = async (ticker) => {
     setLoading(true);
     setError(null);
-    setData(null);
     
     try {
-      const response = await fetch(`http://localhost:8000/analyze/${ticker}`);
+      const response = await fetch(`https://stockdex-api.vercel.app/analyze/${ticker}`);
       if (!response.ok) {
         throw new Error('Stock not found or API error');
       }
       const result = await response.json();
-      setData(result);
+      
+      if (mode === 'compare') {
+          // In compare mode, if we have data, set compareData. If not, set data.
+          if (data) {
+             if (result.ticker === data.ticker) {
+                  throw new Error("Cannot compare same stock");
+             }
+             setCompareData(result);
+          } else {
+             setData(result);
+          }
+      } else {
+          // Single mode: always replace primary data and clear comparison
+          setData(result);
+          setCompareData(null); 
+      }
+
     } catch (err) {
       setError(err.message);
     } finally {
@@ -59,8 +76,26 @@ function App() {
             <h1 className="text-2xl font-bold tracking-tight">STOCKDEX <span className="text-fin-text-secondary font-light">PRO</span></h1>
          </motion.div>
          
-         <div className="w-full md:w-96">
-            <SearchBar onSearch={handleSearch} isLoading={loading} />
+         <div className="flex flex-col md:flex-row gap-4 items-center w-full md:w-auto">
+             {/* Mode Switcher */}
+             <div className="bg-slate-900 p-1 rounded-lg flex border border-fin-border">
+                <button 
+                    onClick={() => { setMode('single'); setCompareData(null); }}
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${mode === 'single' ? 'bg-fin-card shadow-lg text-white' : 'text-fin-text-secondary hover:text-white'}`}
+                >
+                    Single
+                </button>
+                <button 
+                    onClick={() => setMode('compare')}
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${mode === 'compare' ? 'bg-fin-card shadow-lg text-white' : 'text-fin-text-secondary hover:text-white'}`}
+                >
+                    Compare
+                </button>
+             </div>
+
+             <div className="w-full md:w-96">
+                <SearchBar onSearch={handleSearch} isLoading={loading} placeholder={mode === 'compare' && data ? "Add to compare..." : "Search ticker..."} />
+             </div>
          </div>
       </header>
 
@@ -95,9 +130,12 @@ function App() {
         )}
 
         <AnimatePresence mode="wait">
-          {data && (
+          {data && !compareData && (
             <motion.div 
-              key={data.ticker}
+              key="single-view"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               // Bento Grid Layout
               className="grid grid-cols-1 md:grid-cols-12 md:grid-rows-2 gap-4 h-auto md:h-[600px] w-full"
             >
@@ -116,6 +154,45 @@ function App() {
                   <RawStatsCard stats={data.raw_stats} />
                </div>
             </motion.div>
+          )}
+
+          {data && compareData && (
+             <motion.div 
+                key="compare-view"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="grid grid-cols-1 md:grid-cols-3 gap-6 h-auto md:h-[600px] w-full"
+             >
+                {/* Left: Stock A Stats */}
+                <div className="flex flex-col gap-4 overflow-y-auto">
+                    <div className="bg-fin-card p-4 rounded-xl border border-fin-border">
+                        <h2 className="text-xl font-bold" style={{ color: accentColor }}>{data.ticker}</h2>
+                        <p className="text-sm text-fin-text-secondary">{data.name}</p>
+                    </div>
+                    <RawStatsCard stats={data.raw_stats} />
+                    <div className="h-48">
+                        <TrendChart history={data.history} color={accentColor} />
+                    </div>
+                </div>
+
+                {/* Middle: Radar Comparison */}
+                <div className="flex flex-col">
+                    <StatCard data={data} compareData={compareData} accentColor={accentColor} compareColor={getIndustryColor(compareData.category)} />
+                </div>
+
+                {/* Right: Stock B Stats */}
+                <div className="flex flex-col gap-4 overflow-y-auto">
+                    <div className="bg-fin-card p-4 rounded-xl border border-fin-border">
+                        <h2 className="text-xl font-bold" style={{ color: getIndustryColor(compareData.category) }}>{compareData.ticker}</h2>
+                        <p className="text-sm text-fin-text-secondary">{compareData.name}</p>
+                    </div>
+                    <RawStatsCard stats={compareData.raw_stats} />
+                    <div className="h-48">
+                        <TrendChart history={compareData.history} color={getIndustryColor(compareData.category)} />
+                    </div>
+                </div>
+             </motion.div>
           )}
         </AnimatePresence>
       </main>

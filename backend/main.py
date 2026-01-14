@@ -9,7 +9,11 @@ app = FastAPI(title="Stockdex API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "https://stockdex.vercel.app",
+        "*"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -126,12 +130,12 @@ def get_stock_data(ticker: str):
 
 
     stats = {
-        "HP": hp_score,
-        "Attack": atk_score,
-        "Defense": def_score,
-        "SpAtk": sp_atk_score,
-        "SpDef": sp_def_score,
-        "Speed": speed_score
+        "Liquidity": hp_score,
+        "Growth": atk_score,
+        "Profitability": def_score,
+        "Innovation": sp_atk_score,
+        "Solvency": sp_def_score,
+        "Volatility": speed_score
     }
     
     # Determine Type based on sector/industry

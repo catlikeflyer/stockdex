@@ -19,14 +19,23 @@ const TrendChart = ({ history, color = '#39ff14' }) => {
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
           <XAxis 
             dataKey="date" 
-            hide={true} 
+            tick={{ fill: '#94a3b8', fontSize: 10 }}
+            tickFormatter={(str) => {
+              const date = new Date(str);
+              return date.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+            }}
+            axisLine={false}
+            tickLine={false}
+            minTickGap={30}
           />
           <YAxis 
             domain={['auto', 'auto']} 
             orientation="right" 
             tick={{ fill: '#94a3b8', fontSize: 10 }}
+            tickFormatter={(number) => `$${number}`}
             axisLine={false}
             tickLine={false}
+            width={40}
           />
           <Tooltip 
             contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', color: '#f8fafc' }}
