@@ -13,27 +13,36 @@ const statDefinitions = {
 
 
 
+const CustomTick = ({ payload, x, y, cx, cy, setTooltip, ...rest }) => {
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text
+        x={0}
+        y={0}
+        textAnchor={(x - cx) > 5 ? "start" : (x - cx) < -5 ? "end" : "middle"}
+        dominantBaseline={(y - cy) > 5 ? "hanging" : (y - cy) < -5 ? "auto" : "central"}
+        fill="#94a3b8"
+        fontSize={10}
+        fontWeight={600}
+        style={{ cursor: 'help' }}
+        onMouseEnter={(e) => setTooltip({ 
+            text: statDefinitions[payload.value], 
+            x: e.clientX, 
+            y: e.clientY 
+        })}
+        onMouseLeave={() => setTooltip(null)}
+      >
+        {payload.value}
+      </text>
+    </g>
+  );
+};
+
 const StatCard = ({ data, compareData, accentColor = '#38bdf8', compareColor = '#ffffff' }) => {
   if (!data) return null;
 
-  /* Map legacy keys (from Prod API) to new keys if needed */
-  const normalizeStats = (s) => {
-      if (!s) return {};
-      // If we already have Liquidity, return as is
-      if (s.Liquidity !== undefined) return s;
-
-      return {
-          Liquidity: s.HP,
-          Growth: s.Attack,
-          Profitability: s.Defense,
-          Volatility: s.Speed,
-          Solvency: s.SpDef,
-          Innovation: s.SpAtk
-      };
-  };
-
-  const currentStats = normalizeStats(stats);
-  const comparisonStats = compareData ? normalizeStats(compareData.stats) : {};
+  const [tooltip, setTooltip] = React.useState(null);
+  const { stats, category, name, ticker, logo_url } = data;
 
   /* Ensure values are numbers */
   const cleanStats = (val) => {
@@ -42,12 +51,12 @@ const StatCard = ({ data, compareData, accentColor = '#38bdf8', compareColor = '
   };
 
   const chartData = [
-    { subject: 'Liquidity', A: cleanStats(currentStats.Liquidity), B: compareData ? cleanStats(comparisonStats.Liquidity) : 0, fullMark: 100 },
-    { subject: 'Growth', A: cleanStats(currentStats.Growth), B: compareData ? cleanStats(comparisonStats.Growth) : 0, fullMark: 100 },
-    { subject: 'Profitability', A: cleanStats(currentStats.Profitability), B: compareData ? cleanStats(comparisonStats.Profitability) : 0, fullMark: 100 },
-    { subject: 'Volatility', A: cleanStats(currentStats.Volatility), B: compareData ? cleanStats(comparisonStats.Volatility) : 0, fullMark: 100 },
-    { subject: 'Solvency', A: cleanStats(currentStats.Solvency), B: compareData ? cleanStats(comparisonStats.Solvency) : 0, fullMark: 100 },
-    { subject: 'Innovation', A: cleanStats(currentStats.Innovation), B: compareData ? cleanStats(comparisonStats.Innovation) : 0, fullMark: 100 },
+    { subject: 'Liquidity', A: cleanStats(stats.Liquidity), B: compareData ? cleanStats(compareData.stats.Liquidity) : 0, fullMark: 100 },
+    { subject: 'Growth', A: cleanStats(stats.Growth), B: compareData ? cleanStats(compareData.stats.Growth) : 0, fullMark: 100 },
+    { subject: 'Profitability', A: cleanStats(stats.Profitability), B: compareData ? cleanStats(compareData.stats.Profitability) : 0, fullMark: 100 },
+    { subject: 'Volatility', A: cleanStats(stats.Volatility), B: compareData ? cleanStats(compareData.stats.Volatility) : 0, fullMark: 100 },
+    { subject: 'Solvency', A: cleanStats(stats.Solvency), B: compareData ? cleanStats(compareData.stats.Solvency) : 0, fullMark: 100 },
+    { subject: 'Innovation', A: cleanStats(stats.Innovation), B: compareData ? cleanStats(compareData.stats.Innovation) : 0, fullMark: 100 },
   ];
 
   return (
@@ -56,6 +65,16 @@ const StatCard = ({ data, compareData, accentColor = '#38bdf8', compareColor = '
       animate={{ opacity: 1, scale: 1 }}
       className="bg-fin-card backdrop-blur-md border border-fin-border rounded-xl p-6 w-full h-full flex flex-col items-center"
     >
+      {/* Tooltip Portal */}
+      {tooltip && (
+        <div 
+            className="fixed z-50 bg-slate-900/90 text-slate-200 text-xs p-2 rounded border border-slate-700 shadow-xl pointer-events-none backdrop-blur-sm max-w-[200px]"
+            style={{ top: tooltip.y + 10, left: tooltip.x + 10 }}
+        >
+            {tooltip.text}
+        </div>
+      )}
+
       {/* Header - Only show if NOT in compare mode, or show simplified */}
       {!compareData ? (
           <div className="flex items-center gap-4 mb-6 w-full">
@@ -92,10 +111,11 @@ const StatCard = ({ data, compareData, accentColor = '#38bdf8', compareColor = '
       )}
 
       {/* Radar Chart */}
-      <div className="w-full h-64 flex-1 min-h-0 flex justify-center items-center">
-          <RadarChart width={300} height={250} cx="50%" cy="50%" outerRadius="80%" data={chartData}>
-            <PolarGrid />
-            <PolarAngleAxis dataKey="subject" />
+      <div className="w-full h-64 flex-1 min-h-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
+            <PolarGrid stroke="#334155" /> {/* Slate 700 */}
+            <PolarAngleAxis dataKey="subject" tick={<CustomTick setTooltip={setTooltip} />} />
             <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
             <Radar
               name={ticker}
@@ -116,6 +136,7 @@ const StatCard = ({ data, compareData, accentColor = '#38bdf8', compareColor = '
                 />
             )}
           </RadarChart>
+        </ResponsiveContainer>
       </div>
 
     </motion.div>
