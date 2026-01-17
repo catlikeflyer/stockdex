@@ -206,3 +206,70 @@ def search_ticker(q: str):
     except Exception as e:
         print(f"Search error: {e}")
         return []
+
+from pydantic import BaseModel
+from typing import List
+
+class TeamRequest(BaseModel):
+    tickers: List[str]
+
+@app.post("/analyze-team")
+def analyze_team(request: TeamRequest):
+    team_data = []
+    
+    # metrics for aggregation
+    total_stats = {
+        "Liquidity": 0, "Growth": 0, "Profitability": 0, 
+        "Innovation": 0, "Solvency": 0, "Volatility": 0
+    }
+    
+    sectors = {}
+    
+    valid_count = 0
+    
+    for ticker in request.tickers:
+        try:
+            # We use the existing function but we need to handle if it fails gracefully for the team view
+            # If one stock fails, we might just skip it or error out? 
+            # Let's skip it but log it
+            data = get_stock_data(ticker.upper())
+            team_data.append(data)
+            
+            # Aggregate Stats
+            for key in total_stats:
+                total_stats[key] += data['stats'].get(key, 0)
+            
+            # Aggregate Sectors
+            sec = data.get('sector', 'Unknown')
+            sectors[sec] = sectors.get(sec, 0) + 1
+            
+            valid_count += 1
+            
+        except Exception as e:
+            print(f"Error fetching {ticker} for team: {e}")
+            continue
+
+    if valid_count == 0:
+        raise HTTPException(status_code=400, detail="No valid stocks found for team")
+
+    # Average the stats
+    avg_stats = {k: int(v / valid_count) for k, v in total_stats.items()}
+    
+    # Calculate composition percentages
+    composition = []
+    for sec, count in sectors.items():
+        composition.append({
+            "sector": sec,
+            "count": count,
+            "percentage": round((count / valid_count) * 100, 1)
+        })
+    
+    # Sort composition by percentage desc
+    composition.sort(key=lambda x: x['count'], reverse=True)
+
+    return {
+        "team_members": team_data,
+        "team_stats": avg_stats,
+        "team_composition": composition,
+        "member_count": valid_count
+    }
