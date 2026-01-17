@@ -60,16 +60,49 @@ function App() {
       if (team.length === 0) return null;
       
       const sums = { Liquidity: 0, Growth: 0, Profitability: 0, Volatility: 0, Solvency: 0, Innovation: 0 };
+      let totalPE = 0;
+      let totalDiv = 0;
+      let peCount = 0;
+      let divCount = 0;
+
       team.forEach(member => {
+          // Radar Stats
           Object.keys(sums).forEach(key => {
               sums[key] += (member.stats[key] || 0);
           });
+
+          // Raw Stats
+          if (member.raw_stats) {
+              const pe = parseFloat(member.raw_stats.pe_ratio);
+              if (!isNaN(pe)) {
+                  totalPE += pe;
+                  peCount++;
+              }
+
+              const div = parseFloat(member.raw_stats.dividend_yield); // might be "0.05%" or raw number
+              // The API usually returns raw string from yfinance info? Let's assume decimal or check parsing.
+              // Actually yfinance info 'dividendYield' is usually a decimal like 0.005 for 0.5%
+              // But let's check what our backend returns. The backend just dumps `info.get("dividendYield")`.
+              // yfinance returns 0.0056. 
+              // Wait, if it is None, we skip.
+              if (!isNaN(div)) {
+                  totalDiv += div;
+                  divCount++;
+              }
+          }
       });
 
       const avgs = {};
       Object.keys(sums).forEach(key => {
           avgs[key] = Math.round(sums[key] / team.length);
       });
+
+      // Add computed raw metrics
+      avgs.raw = {
+          pe_ratio: peCount > 0 ? (totalPE / peCount) : 0,
+          dividend_yield: divCount > 0 ? (totalDiv / divCount) : 0 // API returns percentage (e.g. 0.41 for 0.41%), no need to multiply by 100
+      };
+
       return avgs;
   }, [team]);
 

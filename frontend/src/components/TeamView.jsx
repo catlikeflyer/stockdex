@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import TeamMemberCard from './TeamMemberCard';
 import StatCard from './StatCard';
+import TeamMetricsCard from './TeamMetricsCard';
 import { motion } from 'framer-motion';
 
 const TeamView = ({ team, teamStats, onRemove, maxTeamSize = 6 }) => {
@@ -48,21 +49,30 @@ const TeamView = ({ team, teamStats, onRemove, maxTeamSize = 6 }) => {
         )}
       </div>
 
-      {/* Right: Team Analysis - Spans 8 cols, 2 rows */}
-      <div className="md:col-span-8 md:row-span-2 h-96 md:h-full">
-        {team.length > 0 ? (
-            <StatCard 
-                data={teamStatData} 
-                accentColor="#8b5cf6" // Violet for Team
-            />
-        ) : (
-            <div className="h-full w-full bg-fin-card/30 border border-fin-border rounded-xl flex items-center justify-center text-fin-text-secondary">
-                <div className="text-center">
-                    <p className="text-xl font-bold mb-2">Build Your Team</p>
-                    <p className="text-sm max-w-xs mx-auto">Add at least one stock to see the team analysis.</p>
+      {/* Right: Team Analysis - Spans 8 cols */}
+      {/* Split into Radar (Top) and Metrics (Bottom) */}
+      <div className="md:col-span-8 md:row-span-2 flex flex-col gap-4 h-full">
+         <div className="flex-1 min-h-0">
+            {team.length > 0 ? (
+                <StatCard 
+                    data={teamStatData} 
+                    accentColor="#8b5cf6" // Violet for Team
+                />
+            ) : (
+                <div className="h-full w-full bg-fin-card/30 border border-fin-border rounded-xl flex items-center justify-center text-fin-text-secondary">
+                    <div className="text-center">
+                        <p className="text-xl font-bold mb-2">Build Your Team</p>
+                        <p className="text-sm max-w-xs mx-auto">Add at least one stock to see the team analysis.</p>
+                    </div>
                 </div>
-            </div>
-        )}
+            )}
+         </div>
+         
+         <div className="h-32 shrink-0">
+             {team.length > 0 && teamStats && teamStats.raw && (
+                 <TeamMetricsCard metrics={teamStats.raw} />
+             )}
+         </div>
       </div>
     </div>
   );
