@@ -4,6 +4,9 @@ A modern, Bento-grid financial dashboard that gamifies stock analysis.
 
 ## Features
 - **Stat Radar**: Visualizes stock health (Liquidity, Growth, Margins, etc.) as Pokemon-style stats.
+- **Team Builder**: Build a portfolio of up to 6 stocks to analyze their combined stats and synergy.
+- **Risk Analysis**: Correlation heatmap to visualize team members' return correlations (Synergy/Hedging).
+- **Portfolio Metrics**: Analyzes weighted average P/E and Dividend Yield for the team.
 - **Trend Evolution**: 1-year historical price chart.
 - **Raw Metrics**: Key financial data (Market Cap, P/E, etc.).
 - **Smart Search**: Context-aware ticker search.
