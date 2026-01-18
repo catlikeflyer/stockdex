@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import StatCard from './components/StatCard';
 import TrendChart from './components/TrendChart';
 import RawStatsCard from './components/RawStatsCard';
@@ -10,6 +10,7 @@ function App() {
   const [data, setData] = useState(null);
   const [compareData, setCompareData] = useState(null);
   const [team, setTeam] = useState([]); // List of stock objects
+  const [riskAnalysis, setRiskAnalysis] = useState(null);
   const [mode, setMode] = useState('single'); // 'single' | 'compare' | 'team'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -54,6 +55,37 @@ function App() {
   const removeFromTeam = (ticker) => {
       setTeam(team.filter(t => t.ticker !== ticker));
   };
+
+  // Fetch Risk Analysis when team changes
+  useEffect(() => {
+    if (team.length < 2) {
+        setRiskAnalysis(null);
+        return;
+    }
+
+    const fetchRisk = async () => {
+        try {
+            const tickers = team.map(t => t.ticker);
+            const response = await fetch('http://127.0.0.1:8000/analyze-team', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tickers })
+            });
+            if (response.ok) {
+                const result = await response.json();
+                if (result.risk_analysis) {
+                    setRiskAnalysis(result.risk_analysis);
+                }
+            }
+        } catch (e) {
+            console.error("Failed to fetch risk analysis", e);
+        }
+    };
+
+    // Debounce slightly or just call
+    const timeout = setTimeout(fetchRisk, 500);
+    return () => clearTimeout(timeout);
+  }, [team]);
 
   // Calculate Team Stats locally for instant feedback
   const teamStats = useMemo(() => {
@@ -268,6 +300,7 @@ function App() {
                   <TeamView 
                     team={team} 
                     teamStats={teamStats} 
+                    riskAnalysis={riskAnalysis}
                     onRemove={removeFromTeam} 
                   />
               </motion.div>

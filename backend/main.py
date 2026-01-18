@@ -267,9 +267,66 @@ def analyze_team(request: TeamRequest):
     # Sort composition by percentage desc
     composition.sort(key=lambda x: x['count'], reverse=True)
 
+    # Risk Analysis (Correlation Matrix)
+    correlation_matrix = {}
+    try:
+        # 1. Consolidate History into DataFrame
+        data_frames = []
+        for member in team_data:
+            ticker = member['ticker']
+            # member['history'] is list of dicts: {'date': 'YYYY-MM-DD', 'price': 123.45}
+            df = pd.DataFrame(member['history'])
+            if not df.empty:
+                df['date'] = pd.to_datetime(df['date'])
+                df.set_index('date', inplace=True)
+                df.rename(columns={'price': ticker}, inplace=True)
+                data_frames.append(df)
+        
+        if len(data_frames) > 1:
+            # Join on index (Date), outer join to keep all dates? Or inner to compare only valid periods?
+            # Inner join is safer for correlation to ensure same time periods.
+            combined_df = pd.concat(data_frames, axis=1, join='inner')
+            
+            # 2. Calculate Daily Returns
+            returns_df = combined_df.pct_change().dropna()
+            
+            # 3. Calculate Correlation
+            corr_df = returns_df.corr()
+            
+            # Format for JSON: {'AAPL': {'AAPL': 1.0, 'MSFT': 0.8}, 'MSFT': ...}
+            # Or list of nodes/links? 
+            # For Heatmap, a simple dict structure is fine.
+            # But converting to a list of rows might be easier for frontend to iterate.
+            # Let's clean NaN
+            corr_df = corr_df.fillna(0)
+            
+            # Convert to dict of dicts
+            temp_dict = corr_df.to_dict()
+            
+            # Structure for easy frontend grid: 
+            # { "tickers": ["AAPL", "MSFT"], "matrix": [[1.0, 0.8], [0.8, 1.0]] }
+            tickers = list(combined_df.columns)
+            matrix = []
+            for t1 in tickers:
+                row = []
+                for t2 in tickers:
+                    val = temp_dict[t1].get(t2, 0)
+                    row.append(round(val, 2))
+                matrix.append(row)
+            
+            correlation_matrix = {
+                "tickers": tickers,
+                "matrix": matrix
+            }
+            
+    except Exception as e:
+        print(f"Risk analysis error: {e}")
+        # Return empty if fails
+
     return {
         "team_members": team_data,
         "team_stats": avg_stats,
         "team_composition": composition,
-        "member_count": valid_count
+        "member_count": valid_count,
+        "risk_analysis": correlation_matrix
     }
