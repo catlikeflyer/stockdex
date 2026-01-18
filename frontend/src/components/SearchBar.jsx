@@ -13,7 +13,7 @@ const SearchBar = ({ onSearch, isLoading }) => {
     const timer = setTimeout(async () => {
       if (query.length >= 2) {
         try {
-          const res = await fetch(`http://localhost:8000/search?q=${query}`);
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/search?q=${query}`);
           const data = await res.json();
           setSuggestions(data);
           setShowSuggestions(true);
