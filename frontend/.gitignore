@@ -23,3 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 **/.env
+**/.env.local
+**/.env.production
+**/.env.test
+**/.env.development
+**/.env.example
+
