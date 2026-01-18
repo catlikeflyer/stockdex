@@ -12,6 +12,32 @@ A modern, Bento-grid financial dashboard that gamifies stock analysis.
 - **Smart Search**: Context-aware ticker search.
 - **Bento UI**: Responsive grid layout with glassmorphism and fintech aesthetics.
 
+## Mathematical Methodologies
+
+### 1. Risk Analysis (Correlation Heatmap)
+To visualize the relationship between assets in a team, we compute the **Pearson Correlation Coefficient** of their daily returns.
+
+**Step 1: Daily Returns**
+We calculate the daily percentage change in price for each stock $i$:
+$$ R_{i,t} = \frac{P_{i,t} - P_{i,t-1}}{P_{i,t-1}} $$
+
+**Step 2: Correlation Matrix**
+For any pair of stocks $X$ and $Y$, the correlation coefficient $\rho_{X,Y}$ is calculated as:
+$$ \rho_{X,Y} = \frac{\text{cov}(X,Y)}{\sigma_X \sigma_Y} $$
+Where:
+- $\text{cov}(X,Y)$ is the covariance of the daily returns.
+- $\sigma_X$ and $\sigma_Y$ are the standard deviations (volatility) of the returns.
+
+**Interpretation:**
+- $\rho = 1.0$: Perfect positive correlation (Prices move identically).
+- $\rho = -1.0$: Perfect negative correlation (Prices move inversely).
+- $\rho \approx 0$: No correlation.
+
+### 2. Team Metrics
+- **Average P/E**: Arithmetic mean of the P/E ratios of team members.
+- **Average Yield**: Arithmetic mean of the Dividend Yields.
+*(Note: In a real portfolio, these would be weighted by position size, but for the "Dream Team" builder, we assume equal weights).*
+
 ## Tech Stack
 - **Backend**: FastAPI, yfinance
 - **Frontend**: React (Vite), Tailwind CSS, Recharts, Framer Motion
