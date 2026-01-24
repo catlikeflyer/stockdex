@@ -4,7 +4,11 @@ import yfinance as yf
 from functools import lru_cache
 import pandas as pd
 import math
-from backend.risk_engine import calculate_var_cvar
+try:
+    from backend.risk_engine import calculate_var_cvar
+except ImportError:
+    from risk_engine import calculate_var_cvar
+
 
 app = FastAPI(title="Stockdex API")
 
