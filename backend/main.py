@@ -8,6 +8,11 @@ from backend.risk_engine import calculate_var_cvar
 
 app = FastAPI(title="Stockdex API")
 
+@app.get("/")
+def read_root():
+    return {"status": "ok", "message": "Stockdex API is running"}
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
