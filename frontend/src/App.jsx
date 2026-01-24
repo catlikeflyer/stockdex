@@ -4,6 +4,8 @@ import TrendChart from './components/TrendChart';
 import RawStatsCard from './components/RawStatsCard';
 import SearchBar from './components/SearchBar';
 import TeamView from './components/TeamView';
+import RiskDashboard from './components/RiskDashboard';
+import Glossary from './components/Glossary';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function App() {
@@ -11,6 +13,8 @@ function App() {
   const [compareData, setCompareData] = useState(null);
   const [team, setTeam] = useState([]); // List of stock objects
   const [riskAnalysis, setRiskAnalysis] = useState(null);
+  const [showRiskModal, setShowRiskModal] = useState(false);
+  const [showGlossary, setShowGlossary] = useState(false);
   const [mode, setMode] = useState('single'); // 'single' | 'compare' | 'team'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -192,9 +196,20 @@ function App() {
                         "Search ticker..."
                     } 
                 />
-             </div>
-         </div>
-      </header>
+              </div>
+ 
+              <button 
+                  onClick={() => setShowGlossary(true)}
+                  className="p-2 text-fin-text-secondary hover:text-white hover:bg-slate-800 rounded-lg transition-colors flex flex-col items-center gap-1 group"
+                  title="Glossary"
+              >
+                 <svg className="w-6 h-6 group-hover:text-fuchsia-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                 </svg>
+                 <span className="text-[10px] font-medium hidden md:block">Glossary</span>
+              </button>
+          </div>
+       </header>
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl mx-auto w-full flex flex-col justify-center">
@@ -227,6 +242,20 @@ function App() {
             </motion.div>
         )}
 
+        {/* Risk Modal */}
+        <AnimatePresence>
+            {showRiskModal && data && (
+                <RiskDashboard ticker={data.ticker} onClose={() => setShowRiskModal(false)} />
+            )}
+        </AnimatePresence>
+
+        {/* Glossary Modal */}
+        <AnimatePresence>
+            {showGlossary && (
+                <Glossary onClose={() => setShowGlossary(false)} />
+            )}
+        </AnimatePresence>
+
         <AnimatePresence mode="wait">
           {mode === 'single' && data && !compareData && (
             <motion.div 
@@ -245,6 +274,24 @@ function App() {
                <div className="md:col-span-7 md:row-span-1 h-full">
                   <RawStatsCard stats={data.raw_stats} />
                </div>
+            </motion.div>
+          )}
+            
+          {/* Risk Trigger Button */}
+          {mode === 'single' && data && !compareData && (
+            <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 0.5 } }}
+                className="fixed bottom-8 right-8 z-40"
+            >
+                <button 
+                    onClick={() => setShowRiskModal(true)}
+                    className="bg-indigo-500 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-500/25 px-6 py-2.5 rounded-full flex items-center gap-2 transition-all hover:scale-105 active:scale-95 font-medium"
+                >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span>Risk Analysis</span>
+                </button>
             </motion.div>
           )}
 

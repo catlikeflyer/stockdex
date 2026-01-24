@@ -4,6 +4,7 @@ import yfinance as yf
 from functools import lru_cache
 import pandas as pd
 import math
+from backend.risk_engine import calculate_var_cvar
 
 app = FastAPI(title="Stockdex API")
 
@@ -164,6 +165,44 @@ def get_stock_data(ticker: str):
         "current_price": info.get('currentPrice'),
         "currency": info.get('currency', 'USD')
     }
+
+@app.get("/api/v1/risk-metrics/{ticker}")
+def get_risk_metrics(ticker: str):
+    try:
+        # Fetch data similar to get_stock_data but we only need history
+        stock = yf.Ticker(ticker.upper())
+        # 1y history is standard for VaR usually, or 2y. Let's stick to 1y to match other parts.
+        hist = stock.history(period="1y")
+        
+        if hist.empty:
+             raise HTTPException(status_code=404, detail="Insufficient data for risk analysis")
+        
+        # Calculate daily returns
+        # Hist 'Close' is needed.
+        # pct_change() computes return
+        returns = hist['Close'].pct_change().dropna()
+        
+        # Convert to list/array for our engine
+        risk_metrics = calculate_var_cvar(returns.values)
+        
+        # We also want to return the raw returns distribution for the histogram
+        # We can return the list of returns.
+        # 0.015 = 1.5%
+        return_values = [float(x) for x in returns.values]
+        
+        return {
+            "ticker": ticker.upper(),
+            "var": risk_metrics['var'],
+            "cvar": risk_metrics['cvar'],
+            "confidence_level": risk_metrics['confidence_level'],
+            "mean_return": risk_metrics['mean_return'],
+            "volatility": risk_metrics['volatility'],
+            "returns": return_values  # For Histogram
+        }
+
+    except Exception as e:
+        print(f"Risk error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/analyze/{ticker}")
 def analyze_stock(ticker: str):
