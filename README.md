@@ -1,42 +1,28 @@
 # Stockdex Pro
 
-A modern, Bento-grid financial dashboard that gamifies stock analysis.
+A modern, Bento-grid financial dashboard designed to make stock analysis **quick, visual, and easy for beginners**.
 
-## Features
-- **Stat Radar**: Visualizes stock health (Liquidity, Growth, Margins, etc.) as Pokemon-style stats.
-- **Team Builder**: Build a portfolio of up to 6 stocks to analyze their combined stats and synergy.
-- **Risk Analysis**: Correlation heatmap to visualize team members' return correlations (Synergy/Hedging).
-- **Portfolio Metrics**: Analyzes weighted average P/E and Dividend Yield for the team.
-- **Trend Evolution**: 1-year historical price chart.
-- **Raw Metrics**: Key financial data (Market Cap, P/E, etc.).
-- **Smart Search**: Context-aware ticker search.
-- **Bento UI**: Responsive grid layout with glassmorphism and fintech aesthetics.
+## Why Stockdex?
+Stock markets can be overwhelming. Stockdex Pro simplifies the noise by turning complex financial data into intuitive, game-like visuals. Whether you're a complete beginner or looking for a faster way to screen stocks, this tool helps you understand what matters in seconds.
 
-## Mathematical Methodologies
+## Beginner-Friendly Features
+- **Stat Radar**: Instantly see a stock's strengths and weaknesses (Liquidity, Growth, Profitability) visualized as a Pokemon-style stat chart. No need to dig through spreadsheets.
+- **Built-in Glossary**: Confused by a term like "P/E Ratio" or "Beta"? Just click the glossary to get plain-English definitions while you analyze.
+- **Team Builder**: "Draft" a portfolio of up to 6 stocks and see how they work together as a team.
+- **Risk Simplified**: Our "Synergy Heatmap" uses simple colors to show if your stocks move together (risky) or balance each other out (safe).
+- **Key Metrics Only**: We filter out the noise and show you the most important numbers: Market Cap, P/E, and Yield.
+- **Trend Evolution**: A clean 1-year history chart to see the price trend at a glance.
+
+## Mathematical Methodologies (Simplified)
 
 ### 1. Risk Analysis (Correlation Heatmap)
-To visualize the relationship between assets in a team, we compute the **Pearson Correlation Coefficient** of their daily returns.
-
-**Step 1: Daily Returns**
-We calculate the daily percentage change in price for each stock $i$:
-$$ R_{i,t} = \frac{P_{i,t} - P_{i,t-1}}{P_{i,t-1}} $$
-
-**Step 2: Correlation Matrix**
-For any pair of stocks $X$ and $Y$, the correlation coefficient $\rho_{X,Y}$ is calculated as:
-$$ \rho_{X,Y} = \frac{\text{cov}(X,Y)}{\sigma_X \sigma_Y} $$
-Where:
-- $\text{cov}(X,Y)$ is the covariance of the daily returns.
-- $\sigma_X$ and $\sigma_Y$ are the standard deviations (volatility) of the returns.
-
-**Interpretation:**
-- $\rho = 1.0$: Perfect positive correlation (Prices move identically).
-- $\rho = -1.0$: Perfect negative correlation (Prices move inversely).
-- $\rho \approx 0$: No correlation.
+To see if your "team" plays well together, we look at how their prices move daily.
+- **Green (Low Correlation)**: Great! These stocks don't crash at the same time.
+- **Red (High Correlation)**: Careful. If one goes down, the other likely will too.
 
 ### 2. Team Metrics
-- **Average P/E**: Arithmetic mean of the P/E ratios of team members.
-- **Average Yield**: Arithmetic mean of the Dividend Yields.
-*(Note: In a real portfolio, these would be weighted by position size, but for the "Dream Team" builder, we assume equal weights).*
+- **Average P/E**: Is your team expensive or cheap compared to earnings?
+- **Average Yield**: How much dividend income can you expect on average?
 
 ## Tech Stack
 - **Backend**: FastAPI, yfinance
