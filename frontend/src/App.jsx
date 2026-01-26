@@ -168,7 +168,7 @@ function App() {
            animate={{ opacity: 1, x: 0 }}
            className="flex items-center gap-2"
          >
-            <div className="w-8 h-8 rounded-lg shadow-[0_0_15px_rgba(56,189,248,0.5)]" style={{ backgroundColor: mode === 'team' ? '#8b5cf6' : accentColor }}></div>
+            <img src="/logo.png" alt="Stockdex Pro" className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(56,189,248,0.6)] rounded-lg" />
             <h1 className="text-2xl font-bold tracking-tight">STOCKDEX <span className="text-fin-text-secondary font-light">PRO</span></h1>
          </motion.div>
          
